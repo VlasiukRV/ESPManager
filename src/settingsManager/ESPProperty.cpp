@@ -3,11 +3,12 @@
 //
 
 #include "ESPProperty.h"
+
 ESPProperty::ESPProperty() {
-  
+
 }
 
-ESPProperty::ESPProperty(char* name, property_types type) {
+ESPProperty::ESPProperty(char *name, property_types type) {
 
     _int_value = 0;
     _long_value = 0;
@@ -17,11 +18,11 @@ ESPProperty::ESPProperty(char* name, property_types type) {
 
 }
 
-void  ESPProperty::setName(char* name){
+void ESPProperty::setName(char *name) {
     _name = name;
 }
 
-char* ESPProperty::getName() {
+char *ESPProperty::getName() {
     return _name;
 }
 
@@ -29,7 +30,7 @@ property_types ESPProperty::getType() {
     return _type;
 }
 
-char* ESPProperty::getValueStr() {
+char *ESPProperty::getValueStr() {
 
     if (_type == CHAR) {
         return _char_value;
@@ -59,9 +60,9 @@ long ESPProperty::getValueLong() {
 
 }
 
-void ESPProperty::setValue(char* current_value) {
-     _type = CHAR;
-     _char_value = current_value;
+void ESPProperty::setValue(char *current_value) {
+    _type = CHAR;
+    _char_value = current_value;
 }
 
 void ESPProperty::setValue(int current_value) {
@@ -70,6 +71,6 @@ void ESPProperty::setValue(int current_value) {
 }
 
 void ESPProperty::setValue(long current_value) {
-  _type = LONG;
-  _long_value = current_value;
+    _type = LONG;
+    _long_value = current_value;
 }
