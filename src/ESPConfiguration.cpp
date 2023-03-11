@@ -164,7 +164,7 @@ void ESPConfiguration::getESPPropertiesJSON(char* buffer) {
         sensorObject["name"] = ledSensor->getName();
         sensorObject["synonym"] = ledSensor->getSynonym();
         sensorObject["type"] = "led";
-        JsonObject sensorProperties = jsonSensors.createNestedObject("properties");
+        JsonObject sensorProperties = sensorObject.createNestedObject("properties");
         sensorProperties["pin"] = ledSensor->getPin();
         sensorProperties["mqtt_topic"] = ledSensor->getMqttTopic();
     });
