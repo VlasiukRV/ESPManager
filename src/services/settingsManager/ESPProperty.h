@@ -25,11 +25,17 @@ public:
 
     ESPProperty();
 
-    ESPProperty(char *name, property_types type);
+    ESPProperty(const char *name, property_types type);
 
-    void setName(char *name);
+    ESPProperty(const char *name, const char *synonym, property_types type);
 
-    char *getName();
+    void setName(const char *name);
+
+    const char *getName();
+
+    void setSynonym(const char *synonym);
+
+    const char *getSynonym();
 
     property_types getType();
 
@@ -47,7 +53,8 @@ public:
 
 private:
 
-    char *_name;
+    const char *_name;
+    const char *_synonym;
     property_types _type;
 
     char *_char_value;

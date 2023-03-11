@@ -1,7 +1,7 @@
 #include <Preferences.h>
-#include "SettingsManager.h"
+#include "ESPProperties.h"
 
-SettingsManager::SettingsManager() {
+ESPProperties::ESPProperties() {
 
     _storageSpaceName = ESP32_STORAGE_SETTINGS_SPACE_NAME;
 
@@ -10,13 +10,13 @@ SettingsManager::SettingsManager() {
 
 }
 
-SettingsManager::~SettingsManager() {
+ESPProperties::~ESPProperties() {
 
     //delete []_propertiesContainer;
 
 }
 
-void SettingsManager::addSetting(char *name, int value) {
+void ESPProperties::addSetting(const char *name, int value) {
 
     if (_settingsCounter < _settingsLengthMax) {
         _propertiesContainer[_settingsCounter].setName(name);
@@ -26,7 +26,18 @@ void SettingsManager::addSetting(char *name, int value) {
 
 }
 
-void SettingsManager::addSetting(char *name, long value) {
+void ESPProperties::addSetting(const char *name, const char *synonym, int value) {
+
+    if (_settingsCounter < _settingsLengthMax) {
+        _propertiesContainer[_settingsCounter].setName(name);
+        _propertiesContainer[_settingsCounter].setSynonym(synonym);
+        _propertiesContainer[_settingsCounter].setValue(value);
+        _settingsCounter++;
+    }
+
+}
+
+void ESPProperties::addSetting(const char *name, long value) {
 
     if (_settingsCounter < _settingsLengthMax) {
         _propertiesContainer[_settingsCounter].setName(name);
@@ -36,7 +47,18 @@ void SettingsManager::addSetting(char *name, long value) {
 
 }
 
-void SettingsManager::addSetting(char *name, char *value) {
+void ESPProperties::addSetting(const char *name, const char *synonym, long value) {
+
+    if (_settingsCounter < _settingsLengthMax) {
+        _propertiesContainer[_settingsCounter].setName(name);
+        _propertiesContainer[_settingsCounter].setSynonym(synonym);
+        _propertiesContainer[_settingsCounter].setValue(value);
+        _settingsCounter++;
+    }
+
+}
+
+void ESPProperties::addSetting(const char *name, char *value) {
 
     if (_settingsCounter < _settingsLengthMax) {
         _propertiesContainer[_settingsCounter].setName(name);
@@ -46,7 +68,18 @@ void SettingsManager::addSetting(char *name, char *value) {
 
 }
 
-bool SettingsManager::loadSettings() {
+void ESPProperties::addSetting(const char *name, const char *synonym, char *value) {
+
+    if (_settingsCounter < _settingsLengthMax) {
+        _propertiesContainer[_settingsCounter].setName(name);
+        _propertiesContainer[_settingsCounter].setSynonym(synonym);
+        _propertiesContainer[_settingsCounter].setValue(value);
+        _settingsCounter++;
+    }
+
+}
+
+bool ESPProperties::loadSettings() {
     Preferences preferences;
 
     preferences.begin(_storageSpaceName, true);
@@ -77,7 +110,7 @@ bool SettingsManager::loadSettings() {
     return true;
 }
 
-bool SettingsManager::saveSettings() {
+bool ESPProperties::saveSettings() {
     Preferences preferences;
 
     preferences.begin(_storageSpaceName, false);
@@ -106,22 +139,53 @@ bool SettingsManager::saveSettings() {
 
 }
 
-char *SettingsManager::getSettingStr(char *name) {
+char *ESPProperties::getSettingStr(const char *name) {
     ESPProperty property = _getSettingByName(name);
     return property.getValueStr();
 }
 
-int SettingsManager::getSettingInt(char *name) {
+int ESPProperties::getSettingInt(const char *name) {
     ESPProperty property = _getSettingByName(name);
     return property.getValueInt();
 }
 
-long SettingsManager::getSettingLong(char *name) {
+long ESPProperties::getSettingLong(const char *name) {
     ESPProperty property = _getSettingByName(name);
     return property.getValueLong();
 }
 
-ESPProperty SettingsManager::_getSettingByName(char *name) {
+void ESPProperties::editSetting(const char *name, int value) {
+
+    for (int i = 0; i < _settingsCounter; i++) {
+
+        if (strcmp(_propertiesContainer[i].getName(), name) == 0) {
+            _propertiesContainer[i].setValue(value);
+        }
+
+    }
+}
+
+void ESPProperties::editSetting(const char *name, long value) {
+    for (int i = 0; i < _settingsCounter; i++) {
+
+        if (strcmp(_propertiesContainer[i].getName(), name) == 0) {
+            _propertiesContainer[i].setValue(value);
+        }
+
+    }
+}
+
+void ESPProperties::editSetting(const char *name, char *value) {
+    for (int i = 0; i < _settingsCounter; i++) {
+
+        if (strcmp(_propertiesContainer[i].getName(), name) == 0) {
+            _propertiesContainer[i].setValue(value);
+        }
+
+    }
+}
+
+ESPProperty ESPProperties::_getSettingByName(const char *name) {
 
     for (int i = 0; i < _settingsCounter; i++) {
 
@@ -137,7 +201,7 @@ ESPProperty SettingsManager::_getSettingByName(char *name) {
 
 }
 
-void SettingsManager::processingSettings(ProcesOnSetting Procedure) {
+void ESPProperties::processingProperties(ProcesOnSetting Procedure) {
 
     for (int i = 0; i < _settingsCounter; i++) {
         Procedure(&this->_propertiesContainer[i]);

@@ -6,9 +6,12 @@
 
 ESPProperty::ESPProperty() {
 
+    _int_value = 0;
+    _long_value = 0;
+
 }
 
-ESPProperty::ESPProperty(char *name, property_types type) {
+ESPProperty::ESPProperty(const char *name, property_types type) {
 
     _int_value = 0;
     _long_value = 0;
@@ -18,12 +21,28 @@ ESPProperty::ESPProperty(char *name, property_types type) {
 
 }
 
-void ESPProperty::setName(char *name) {
+ESPProperty::ESPProperty(const char *name, const char *synonym, property_types type) {
+    _int_value = 0;
+    _long_value = 0;
+    _name = name;
+    _synonym = synonym;
+    _type = type;
+}
+
+void ESPProperty::setName(const char *name) {
     _name = name;
 }
 
-char *ESPProperty::getName() {
+const char *ESPProperty::getName() {
     return _name;
+}
+
+void ESPProperty::setSynonym(const char *synonym) {
+    _synonym = synonym;
+}
+
+const char *ESPProperty::getSynonym() {
+    return _synonym;
 }
 
 property_types ESPProperty::getType() {
