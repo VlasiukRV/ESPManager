@@ -7,11 +7,12 @@
 
 #include "services/settingsManager/ESPProperties.h"
 #include "sensors/SensorsManager.h"
+#include "MQTTManager.h"
 #include "services/WiFiConnection.h"
 #include <ESPAsyncWebServer.h>
+#include <HTTPClient.h>
 #include "AsyncJson.h"
 #include "ArduinoJson.h"
-#include <HTTPClient.h>
 #include "SPIFFS.h"
 
 //#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
@@ -28,6 +29,7 @@ public:
     AsyncWebServer *webServer;
 
     SensorsManager *sensorsManager;
+    MQTTManager *mqttManager;
 
     Led *redLed;
     Led *blueLed;
@@ -39,8 +41,10 @@ public:
     bool initWiFiConnection();
     void initWebServer();
     void initSensorsManager();
+    void initMQTTManager();
 
     void getESPPropertiesJSON(char* buffer);
+    void getESPConfigurationJSON(char* buffer);
     void getESPStateJSON(char* buffer);
 
 private:

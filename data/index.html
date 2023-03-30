@@ -20,18 +20,19 @@
 
     <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-            <form action="/settings" method="get" target="hidden-form"><input type="submit" value="Get Settings"></form>
+            <form action="/settings" method="get" target="hidden-form"><button class="btn btn-primary" type="submit" value="Get Settings">Get Settings</button></form>
         </li>
         <li class="nav-item">
-            <form action="/state" method="get" target="hidden-form"><input type="submit" value="Get State"></form>
+            <form action="/state" method="get" target="hidden-form"><button class="btn btn-primary" type="submit" value="Get State">Get State</button></form>
         </li>
         <li class="nav-item">
-            <form action="/reset" method="post" target="hidden-form"><input type="submit" value="Reset"></form>
+            <form action="/reset" method="post" target="hidden-form"><button class="btn btn-primary" type="submit" value="Reset">Reset</button></form>
         </li>
     </ul>
 
     <div class="row">
-        <div class="col-sm-12">
+
+        <div class="col-sm-6 col-12">
 
             <div class="">
 
@@ -41,17 +42,6 @@
                         <h6 class="card-subtitle mb-2 text-muted">GPIO state: <strong> %GPIO_STATE%</strong></h6>
                         <div class="card-text">
                             <ul id="esp-settings" class="list-group list-group-flush"></ul>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    Add Led Sensor:
-                                    <form>
-                                        Name: <input type="text" name="name" value="">
-                                        Synonym: <input type="text" name="synonym" value="">
-                                        PIN: <input type="number" name="pin" value="">
-                                        <input type="submit" value="Submit" class="add-led-sensor">
-                                    </form>
-                                </li>
-                            </ul>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -62,10 +52,74 @@
             </div>
 
         </div>
+
     </div>
 
     <div class="row">
-        <div class="col-sm-12">
+
+        <div class="col-sm-6 col-12">
+
+            <div class="">
+
+                <div class="card border-primary mb-3">
+                    <h5 class="card-header">ESP Sensors</h5>
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">GPIO state: <strong> %GPIO_STATE%</strong></h6>
+                        <div class="card-text">
+
+                            Add Sensor:
+                            <select id="select-sensor-type">
+                                <option value ="" selected="selected">Select sensor type</option>
+                                <option value="led">Led</option>
+                                <option value="dht11">DHT11 Sensor</option>
+                                <option value="motion">Motion Sensor</option>
+                            </select>
+
+                            <ul class="list-group list-group-flush">
+                                <li id="sensor-type-led" name="sensor-type" class="list-group-item" style="display:none;">
+                                    Add Led Sensor:
+                                    <form class="form-group">
+                                        <label>Name:</label> <input class="form-control" type="text" name="name" value="">
+                                        <label>Synonym:</label><input class="form-control" type="text" name="synonym" value="">
+                                        <label>PIN:</label> <input class="form-control" type="number" name="pin" value="">
+                                        <label>MQTT topic:</label> <input class="form-control" type="text" name="mqtt_topic" value="">
+                                        <button type="submit" value="Submit" class="btn btn-primary add-led-sensor"> Submit </button>
+                                    </form>
+                                </li>
+                                <li id="sensor-type-dht11" name="sensor-type" class="list-group-item" style="display:none;">
+                                    Add DHT Sensor:
+                                    <form class="input-group mb-3">
+                                        <label>Name:</label> <input class="form-control" type="text" name="name" value="">
+                                        <label>Synonym:</label> <input class="form-control" type="text" name="synonym" value="">
+                                        <label>PIN:</label> <input class="form-control" type="number" name="pin" value="">
+                                        <label>MQTT topic:</label> <input class="form-control" type="text" name="mqtt_topic" value="">
+                                        <button type="submit" value="Submit" class="btn btn-primary add-dht-sensor"> Submit </button>
+                                    </form>
+                                </li>
+                                <li id="sensor-type-motion" name="sensor-type" class="list-group-item" style="display:none;">
+                                    Add Motion Sensor:
+                                    <form class="input-group mb-3">
+                                        <label>Name:</label> <input class="form-control" type="text" name="name" value="">
+                                        <label>Synonym:</label> <input class="form-control" type="text" name="synonym" value="">
+                                        <label>PIN:</label> <input class="form-control" type="number" name="pin" value="">
+                                        <label>MQTT topic:</label> <input class="form-control" type="text" name="mqtt_topic" value="">
+                                        <button type="submit" value="Submit" class="btn btn-primary add-motion-sensor"> Submit </button>
+                                    </form>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a id="#get-configuration" href="#" class="card-link">Reload Configuration</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-sm-6 col-12">
 
             <div id="esp-sensors" class="card-deck">
 

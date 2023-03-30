@@ -30,6 +30,7 @@ bool ESPConfiguration::init() {
 
         initWebServer();
         initSensorsManager();
+        initMQTTManager();
 
         return true;
     }
@@ -49,7 +50,12 @@ void ESPConfiguration::initESPProperties() {
     espProperties = new ESPProperties();
 
     espProperties->addSetting("ssid", "WIFI SSID:", "VRnet");
-    espProperties->addSetting("password", "WIFI PASSWORD:", "a m e n !");
+    espProperties->addSetting("password", "WIFI PASSWORD:", "");
+    espProperties->addSetting("mqttAddress", "MQTT BROKER ADDRESS:", "");
+    espProperties->addSetting("mqttPort", "MQTT BROKER PORT:", 1083);
+    espProperties->addSetting("mqttUsername", "MQTT BROKER USERNAME:", "");
+    espProperties->addSetting("mqttPassword", "MQTT BROKER PASSWORD:", "");
+
     Serial.println(F(" - load ESP settings"));
 
     if (espProperties->loadSettings()) {
@@ -83,7 +89,6 @@ bool ESPConfiguration::initWiFiConnection() {
 
 void ESPConfiguration::initWebServer() {
 
-    //AsyncWebServer server(80);
     webServer = new AsyncWebServer(80);
 
     webServer->onNotFound([](AsyncWebServerRequest *request){
@@ -136,6 +141,10 @@ void ESPConfiguration::getESPPropertiesJSON(char* buffer) {
 
     JsonArray jsonSettings = doc.createNestedArray("settings");
 
+//    JsonObject jsonESPProperties = doc.createNestedObject("espProperties");
+//    jsonESPProperties["name"] = "hub";
+//    jsonESPProperties["synonym"] = "Main hub";
+
     espProperties->processingProperties([&jsonSettings](ESPProperty *property){
         JsonObject obj = jsonSettings.createNestedObject();
         obj["name"] = property->getName();
@@ -154,19 +163,57 @@ void ESPConfiguration::getESPPropertiesJSON(char* buffer) {
         }
     });
 
-    JsonObject jsonESPProperties = doc.createNestedObject("espProperties");
-    jsonESPProperties["name"] = "hub";
-    jsonESPProperties["synonym"] = "Main hub";
+    serializeJson(doc, buffer, 512);
 
+}
+
+void ESPConfiguration::getESPConfigurationJSON(char* buffer) {
+
+    DynamicJsonDocument doc(1024);
     JsonArray jsonSensors = doc.createNestedArray("sensors");
+
     sensorsManager->processingLedSensors([&jsonSensors](Led *ledSensor) {
         JsonObject sensorObject = jsonSensors.createNestedObject();
         sensorObject["name"] = ledSensor->getName();
         sensorObject["synonym"] = ledSensor->getSynonym();
         sensorObject["type"] = "led";
+
         JsonObject sensorProperties = sensorObject.createNestedObject("properties");
         sensorProperties["pin"] = ledSensor->getPin();
         sensorProperties["mqtt_topic"] = ledSensor->getMqttTopic();
+
+        JsonObject sensorValue = sensorObject.createNestedObject("value");
+        sensorValue["state"] = ledSensor->getState();
+    });
+
+    sensorsManager->processingDHTSensors([&jsonSensors](DHTSensor *dhtSensor) {
+        JsonObject sensorObject = jsonSensors.createNestedObject();
+        sensorObject["name"] = dhtSensor->getName();
+        sensorObject["synonym"] = dhtSensor->getSynonym();
+        sensorObject["type"] = "dht11";
+
+        JsonObject sensorProperties = sensorObject.createNestedObject("properties");
+        sensorProperties["pin"] = dhtSensor->getPin();
+        sensorProperties["mqtt_topic"] = dhtSensor->getMqttTopic();
+
+        JsonObject sensorValue = sensorObject.createNestedObject("value");
+        sensorValue["temperature"] = dhtSensor->readTemperatureStr();
+        sensorValue["humidity"] = dhtSensor->readHumidityStr();
+    });
+
+    sensorsManager->processingMotionSensors([&jsonSensors](MotionSensor *motionSensor) {
+        JsonObject sensorObject = jsonSensors.createNestedObject();
+        sensorObject["name"] = motionSensor->getName();
+        sensorObject["synonym"] = motionSensor->getSynonym();
+        sensorObject["type"] = "motion";
+
+        JsonObject sensorProperties = sensorObject.createNestedObject("properties");
+        sensorProperties["pin"] = motionSensor->getPin();
+        sensorProperties["mqtt_topic"] = motionSensor->getMqttTopic();
+
+        JsonObject sensorValue = sensorObject.createNestedObject("value");
+        sensorValue["state"] = motionSensor->getState();
+
     });
 
     serializeJson(doc, buffer, 512);
@@ -180,5 +227,16 @@ void ESPConfiguration::getESPStateJSON(char* buffer) {
     doc["heap"] = ESP.getFreeHeap();
 
     serializeJson(doc, buffer, 512);
+
+}
+
+void ESPConfiguration::initMQTTManager(){
+
+    mqttManager = new MQTTManager(espProperties->getSettingStr("mqttAddress"),
+                                  espProperties->getSettingInt("mqttPort"),
+                                  espProperties->getSettingStr("mqttUsername"),
+                                  espProperties->getSettingStr("mqttPassword"));
+
+    mqttManager->initMQTTBroker(sensorsManager);
 
 }

@@ -3,10 +3,7 @@
 
 ESPProperties::ESPProperties() {
 
-    _storageSpaceName = ESP32_STORAGE_SETTINGS_SPACE_NAME;
 
-    _settingsLengthMax = PROPERTIES_CONTAINER_LENGTH;
-    _settingsCounter = 0;
 
 }
 
@@ -91,14 +88,22 @@ bool ESPProperties::loadSettings() {
                 String str = preferences.getString(_propertiesContainer[i].getName(), "");
                 const char *charPtr = str.c_str();
                 _propertiesContainer[i].setValue(strdup(charPtr));
+                Serial.printf( "    -- load string [%s] = [%s] \n", _propertiesContainer[i].getName(), charPtr );
                 break;
             }
-            case INT:
-                _propertiesContainer[i].setValue(preferences.getInt(_propertiesContainer[i].getName(), 0));
+            case INT: {
+                int intValue = preferences.getInt(_propertiesContainer[i].getName(), 0);
+                _propertiesContainer[i].setValue(intValue);
+                Serial.printf( "    -- load int [%s] = [%i] \n", _propertiesContainer[i].getName(), _propertiesContainer[i].getValueInt() );
                 break;
-            case LONG:
-                _propertiesContainer[i].setValue(preferences.getLong(_propertiesContainer[i].getName(), 0));
+            }
+            case LONG: {
+                long longValue;
+                longValue = preferences.getLong(_propertiesContainer[i].getName(), 0);
+                _propertiesContainer[i].setValue(longValue);
+                Serial.printf( "    -- load long [%s] = [%i] \n", _propertiesContainer[i].getName(), _propertiesContainer[i].getValueLong() );
                 break;
+            }
             default:
                 break;
         }
@@ -118,15 +123,21 @@ bool ESPProperties::saveSettings() {
     for (int i = 0; i < _settingsCounter; i++) {
 
         switch (_propertiesContainer[i].getType()) {
-            case CHAR:
+            case CHAR: {
+                Serial.printf( "    -- save string [%s] = [%s] \n", _propertiesContainer[i].getName(), _propertiesContainer[i].getValueStr() );
                 preferences.putString(_propertiesContainer[i].getName(), _propertiesContainer[i].getValueStr());
                 break;
-            case INT:
+                }
+            case INT: {
+                Serial.printf( "    -- save int [%s] = [%i] \n", _propertiesContainer[i].getName(), _propertiesContainer[i].getValueInt() );
                 preferences.putInt(_propertiesContainer[i].getName(), _propertiesContainer[i].getValueInt());
                 break;
-            case LONG:
+                }
+            case LONG: {
+                Serial.printf( "    -- save long [%s] = [%i] \n", _propertiesContainer[i].getName(), _propertiesContainer[i].getValueLong() );
                 preferences.putLong(_propertiesContainer[i].getName(), _propertiesContainer[i].getValueLong());
                 break;
+                }
             default:
                 break;
         }
@@ -140,17 +151,17 @@ bool ESPProperties::saveSettings() {
 }
 
 char *ESPProperties::getSettingStr(const char *name) {
-    ESPProperty property = _getSettingByName(name);
+    ESPProperty property = getSettingByName(name);
     return property.getValueStr();
 }
 
 int ESPProperties::getSettingInt(const char *name) {
-    ESPProperty property = _getSettingByName(name);
+    ESPProperty property = getSettingByName(name);
     return property.getValueInt();
 }
 
 long ESPProperties::getSettingLong(const char *name) {
-    ESPProperty property = _getSettingByName(name);
+    ESPProperty property = getSettingByName(name);
     return property.getValueLong();
 }
 
@@ -185,7 +196,7 @@ void ESPProperties::editSetting(const char *name, char *value) {
     }
 }
 
-ESPProperty ESPProperties::_getSettingByName(const char *name) {
+ESPProperty ESPProperties::getSettingByName(const char *name) {
 
     for (int i = 0; i < _settingsCounter; i++) {
 

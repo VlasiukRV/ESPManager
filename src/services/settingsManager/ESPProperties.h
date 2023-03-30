@@ -8,7 +8,7 @@
 #define ESPPROPERTIES_H
 
 #define ESP32_STORAGE_SETTINGS_SPACE_NAME "settings_space"
-#define PROPERTIES_CONTAINER_LENGTH 3
+#define PROPERTIES_CONTAINER_LENGTH 10
 
 typedef std::function<void(ESPProperty *setting)> ProcesOnSetting;
 
@@ -35,6 +35,8 @@ public:
     void editSetting(const char *name, long value);
     void editSetting(const char *name, char *value);
 
+    ESPProperty getSettingByName(const char *name);
+
     bool loadSettings();
 
     bool saveSettings();
@@ -49,13 +51,12 @@ public:
 
 private:
 
-    ESPProperty _getSettingByName(const char *name);
-
     ESPProperty _propertiesContainer[PROPERTIES_CONTAINER_LENGTH];
-    int _settingsLengthMax;
-    int _settingsCounter;
+    int _settingsLengthMax = PROPERTIES_CONTAINER_LENGTH;
+    int _settingsCounter = 0;
 
-    char *_storageSpaceName;
+    char *_storageSpaceName = ESP32_STORAGE_SETTINGS_SPACE_NAME;
+
 protected:
 
 };

@@ -20,7 +20,7 @@ Led::Led(byte pin, char *name, char *synonym) {
 
 }
 
-int Led::getPin() {
+byte Led::getPin() {
     return _pin;
 }
 const char* Led::getName() {
@@ -55,14 +55,38 @@ void Led::setMqttTopic(const char *mqtt_topic) {
     _mqtt_topic = mqtt_topic;
 }
 
+void Led::sendMessage(const char *message) {
+
+    Serial.printf("Led compare [%s] [%s] [%s] \n", message, LED_MESSAGE_ON, LED_MESSAGE_OFF);
+
+    if ( strcmp(message, LED_MESSAGE_ON) == 0) {
+        on();
+    }
+    if ( strcmp(message, LED_MESSAGE_OFF) == 0) {
+        off();
+    }
+
+}
+
+char* Led::getState() {
+    return _state;
+}
+
+void Led::setState(char* state) {
+    _state = state;
+    sendMessage(state);
+}
+
 void Led::on() {
 
+    _state = LED_MESSAGE_ON;
     digitalWrite(_pin, HIGH);
 
 }
 
 void Led::off() {
 
+    _state = LED_MESSAGE_OFF;
     digitalWrite(_pin, LOW);
 
 }
