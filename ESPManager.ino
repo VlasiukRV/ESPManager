@@ -169,14 +169,17 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/addLedSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
+        espConfiguration->webServer->on("/addSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
 
-            Serial.println(".... HTTP_POST /addLedSensor");
+            Serial.println(".... HTTP_POST /addSensor");
 
-            if (request->hasParam("name", true)
+            if (request->hasParam("sensor_type", true)
+                && request->hasParam("name", true)
                 && request->hasParam("pin", true)
                 && request->hasParam("synonym", true)
                 && request->hasParam("mqtt_topic", true)) {
+
+                String typeStr = request->getParam("sensor_type", true)->value();
 
                 String p1 = request->getParam("name", true)->value();
                 const char *name = p1.c_str();
@@ -190,66 +193,14 @@ void setup() {
                 String p4 = request->getParam("mqtt_topic", true)->value();
                 const char *mqtt_topic = p4.c_str();
 
-                espConfiguration->sensorsManager->addLedSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
-                espConfiguration->mqttManager->subscribe(strdup(mqtt_topic));
-            }
-
-            request->send(200);
-
-        });
-
-        espConfiguration->webServer->on("/addDHTSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
-
-            Serial.println(".... HTTP_POST /addDHTSensor");
-
-            if (request->hasParam("name", true)
-                && request->hasParam("pin", true)
-                && request->hasParam("synonym", true)
-                && request->hasParam("mqtt_topic", true)) {
-
-                String p1 = request->getParam("name", true)->value();
-                const char *name = p1.c_str();
-
-                String p2 = request->getParam("synonym", true)->value();
-                const char *synonym = p2.c_str();
-
-                String p3 = request->getParam("pin", true)->value();
-                int pin = p3.toInt();
-
-                String p4 = request->getParam("mqtt_topic", true)->value();
-                const char *mqtt_topic = p4.c_str();
-
-                espConfiguration->sensorsManager->addDHTSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
-
-            }
-
-            request->send(200);
-
-        });
-
-        espConfiguration->webServer->on("/addMotionSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
-
-            Serial.println(".... HTTP_POST /addMotionSensor");
-
-            if (request->hasParam("name", true)
-                && request->hasParam("pin", true)
-                && request->hasParam("synonym", true)
-                && request->hasParam("mqtt_topic", true)) {
-
-                String p1 = request->getParam("name", true)->value();
-                const char *name = p1.c_str();
-
-                String p2 = request->getParam("synonym", true)->value();
-                const char *synonym = p2.c_str();
-
-                String p3 = request->getParam("pin", true)->value();
-                int pin = p3.toInt();
-
-                String p4 = request->getParam("mqtt_topic", true)->value();
-                const char *mqtt_topic = p4.c_str();
-
-                espConfiguration->sensorsManager->addMotionSensor(pin, strdup(name), strdup(synonym),
-                                                                  strdup(mqtt_topic));
+                if ( strcmp("led", typeStr.c_str() ) == 0 ) {
+                    espConfiguration->sensorsManager->addLedSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
+                    espConfiguration->mqttManager->subscribe(strdup(mqtt_topic));
+                }else if ( strcmp("dht11", typeStr.c_str() ) == 0 ) {
+                    espConfiguration->sensorsManager->addDHTSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
+                } else if ( strcmp("motion", typeStr.c_str() ) == 0 ) {
+                    espConfiguration->sensorsManager->addMotionSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
+                }
 
             }
 

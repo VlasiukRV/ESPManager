@@ -54,7 +54,7 @@
 
             let formValues= $(event.target).parent().serialize();
 
-            $.post("/addLedSensor", formValues, function(data){
+            $.post("/addSensor", formValues, function(data){
                 $('[name="sensor-type"]').hide();
                 ESP.loadingConfiguration();
             });
@@ -65,7 +65,7 @@
 
             let formValues= $(event.target).parent().serialize();
 
-            $.post("/addDHTSensor", formValues, function(data){
+            $.post("/addSensor", formValues, function(data){
                 $('[name="sensor-type"]').hide();
                 ESP.loadingConfiguration();
             });
@@ -76,7 +76,7 @@
 
             let formValues= $(event.target).parent().serialize();
 
-            $.post("/addMotionSensor", formValues, function(data){
+            $.post("/addSensor", formValues, function(data){
                 $('[name="sensor-type"]').hide();
                 ESP.loadingConfiguration();
             });
