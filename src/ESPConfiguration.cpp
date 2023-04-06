@@ -31,7 +31,7 @@ bool ESPConfiguration::init() {
         initWebServer();
         initSensorsManager();
         initMQTTManager();
-
+        initESPConfiguration();
         return true;
     }
 
@@ -141,10 +141,6 @@ void ESPConfiguration::getESPPropertiesJSON(char* buffer) {
 
     JsonArray jsonSettings = doc.createNestedArray("settings");
 
-//    JsonObject jsonESPProperties = doc.createNestedObject("espProperties");
-//    jsonESPProperties["name"] = "hub";
-//    jsonESPProperties["synonym"] = "Main hub";
-
     espProperties->processingProperties([&jsonSettings](ESPProperty *property){
         JsonObject obj = jsonSettings.createNestedObject();
         obj["name"] = property->getName();
@@ -167,12 +163,14 @@ void ESPConfiguration::getESPPropertiesJSON(char* buffer) {
 
 }
 
-void ESPConfiguration::getESPConfigurationJSON(char* buffer) {
+void ESPConfiguration::setESPConfigurationJSON(DynamicJsonDocument* doc) {
 
-    DynamicJsonDocument doc(1024);
-    JsonArray jsonSensors = doc.createNestedArray("sensors");
+    Serial.println("prepare JSON configuration");
+    JsonArray jsonSensors = doc->createNestedArray("sensors");
 
     sensorsManager->processingLedSensors([&jsonSensors](Led *ledSensor) {
+        Serial.println("prepare JSON configuration (Led)");
+
         JsonObject sensorObject = jsonSensors.createNestedObject();
         sensorObject["name"] = ledSensor->getName();
         sensorObject["synonym"] = ledSensor->getSynonym();
@@ -187,6 +185,9 @@ void ESPConfiguration::getESPConfigurationJSON(char* buffer) {
     });
 
     sensorsManager->processingDHTSensors([&jsonSensors](DHTSensor *dhtSensor) {
+
+        Serial.println("prepare JSON configuration (DHT)");
+
         JsonObject sensorObject = jsonSensors.createNestedObject();
         sensorObject["name"] = dhtSensor->getName();
         sensorObject["synonym"] = dhtSensor->getSynonym();
@@ -202,6 +203,9 @@ void ESPConfiguration::getESPConfigurationJSON(char* buffer) {
     });
 
     sensorsManager->processingMotionSensors([&jsonSensors](MotionSensor *motionSensor) {
+
+        Serial.println("prepare JSON configuration (MotionSensor)");
+
         JsonObject sensorObject = jsonSensors.createNestedObject();
         sensorObject["name"] = motionSensor->getName();
         sensorObject["synonym"] = motionSensor->getSynonym();
@@ -216,6 +220,73 @@ void ESPConfiguration::getESPConfigurationJSON(char* buffer) {
 
     });
 
+}
+
+void ESPConfiguration::initESPConfiguration() {
+
+    bool loadESPConfiguration = false;
+
+    DynamicJsonDocument doc(1024);
+
+    Serial.println("Load configurationJSON:");
+    File file = SPIFFS.open("/configuration.json", FILE_READ);
+    if (file && file.size()) {
+        int size = file.size();
+        Serial.printf("read file %i \n", size);
+        DeserializationError error = deserializeJson(doc, file);
+
+        if (error) {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.f_str());
+            loadESPConfiguration = false;
+        } else {
+            Serial.print(F("deserializeJson() ok: "));
+            loadESPConfiguration = true;
+        }
+
+    }
+    file.close();
+
+    //if (espProperties->loadESPConfiguration(doc)) {
+    if (loadESPConfiguration) {
+        Serial.println(F("  - configuration loaded:"));
+
+        JsonArray jsonSensors = doc["sensors"].as<JsonArray>();
+        for(JsonVariant sensor : jsonSensors) {
+
+            const char* type = sensor["type"].as<const char*>();
+            String typeStr = String(type);
+
+            const char *name = sensor["name"].as<const char*>();
+            const char *synonym = sensor["synonym"].as<const char*>();
+            int pin = sensor["properties"]["pin"].as<int>();
+            const char *mqtt_topic = sensor["properties"]["mqtt_topic"].as<const char*>();
+
+            if( strcmp("led", typeStr.c_str() ) == 0 ) {
+                Serial.println(F("          - loaded:led"));
+
+                sensorsManager->addLedSensor( pin, strdup(name), strdup(synonym), strdup(mqtt_topic) );
+                mqttManager->subscribe(strdup(mqtt_topic));
+            } else if ( strcmp("dht11", typeStr.c_str() ) == 0 ) {
+                Serial.println(F("          - loaded:dht11"));
+
+                sensorsManager->addDHTSensor( pin, strdup(name), strdup(synonym), strdup(mqtt_topic) );
+            } else if ( strcmp("motion", typeStr.c_str() ) == 0 ) {
+                Serial.println(F("          - loaded:motion"));
+
+                sensorsManager->addMotionSensor( pin, strdup(name), strdup(synonym), strdup(mqtt_topic) );
+            }
+        }
+
+    }
+
+}
+
+void ESPConfiguration::getESPConfigurationJSON(char* buffer) {
+
+    DynamicJsonDocument doc(1024);
+
+    setESPConfigurationJSON(&doc);
     serializeJson(doc, buffer, 512);
 
 }

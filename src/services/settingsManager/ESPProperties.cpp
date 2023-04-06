@@ -150,6 +150,65 @@ bool ESPProperties::saveSettings() {
 
 }
 
+bool ESPProperties::loadESPConfiguration(DynamicJsonDocument doc) {
+
+    //Preferences preferences;
+    //preferences.begin(_storageConfigurationSpaceName, true);
+
+    //String str = preferences.getString("configuration", "");
+    Serial.println("Load configurationJSON:");
+    //Serial.println(str);
+
+    //const char *json = str.c_str();
+
+    //DeserializationError error = deserializeJson(doc, json);
+
+    File file = SPIFFS.open("/configuration.json", FILE_READ);
+    if (file && file.size()) {
+        Serial.printf("read file ");
+        DeserializationError error = deserializeJson(doc, file);
+
+        if (error) {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.f_str());
+            return false;
+        }
+
+        file.close();
+        return true;
+    }
+    file.close();
+    //preferences.end();
+
+    return false;
+
+}
+
+bool ESPProperties::saveESPConfiguration(DynamicJsonDocument doc) {
+
+    File file = SPIFFS.open("/configuration.json", FILE_WRITE);
+    if (serializeJson(doc, file) == 0) {
+        Serial.println(F("Failed to write to file"));
+    }
+    file.close();
+
+}
+//bool ESPProperties::saveESPConfiguration(char *configurationJSON) {
+//
+//    Preferences preferences;
+//    preferences.begin(_storageConfigurationSpaceName, false);
+//
+//    Serial.println("Save configurationJSON:");
+//    Serial.println(configurationJSON);
+//
+//    preferences.putString("configuration", configurationJSON);
+//
+//    preferences.end();
+//
+//    return true;
+//
+//}
+
 char *ESPProperties::getSettingStr(const char *name) {
     ESPProperty property = getSettingByName(name);
     return property.getValueStr();

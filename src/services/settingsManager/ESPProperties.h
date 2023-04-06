@@ -3,11 +3,14 @@
 //
 
 #include "ESPProperty.h"
+#include "SPIFFS.h"
+#include "ArduinoJson.h"
 
 #ifndef ESPPROPERTIES_H
 #define ESPPROPERTIES_H
 
 #define ESP32_STORAGE_SETTINGS_SPACE_NAME "settings_space"
+#define ESP32_STORAGE_CONFIGURATION_SPACE_NAME "configuration_space"
 #define PROPERTIES_CONTAINER_LENGTH 10
 
 typedef std::function<void(ESPProperty *setting)> ProcesOnSetting;
@@ -41,6 +44,10 @@ public:
 
     bool saveSettings();
 
+    bool loadESPConfiguration(DynamicJsonDocument doc);
+
+    bool saveESPConfiguration(DynamicJsonDocument doc);
+
     char *getSettingStr(const char *name);
 
     int getSettingInt(const char *name);
@@ -56,6 +63,7 @@ private:
     int _settingsCounter = 0;
 
     char *_storageSpaceName = ESP32_STORAGE_SETTINGS_SPACE_NAME;
+    char *_storageConfigurationSpaceName= ESP32_STORAGE_CONFIGURATION_SPACE_NAME;
 
 protected:
 

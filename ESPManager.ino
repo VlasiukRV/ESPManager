@@ -86,9 +86,9 @@ void setup() {
 
     //bool test_res = Test_SettingsManager::runTest();
 
-    if ( espConfiguration->init() ) {
+    if (espConfiguration->init()) {
 
-        espConfiguration->webServer->on("/settings", HTTP_GET, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_GET /settings");
 
@@ -99,7 +99,7 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/configuration", HTTP_GET, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/configuration", HTTP_GET, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_GET /configuration");
 
@@ -110,25 +110,48 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/updateSettings", HTTP_POST, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/saveConfiguration", HTTP_POST, [](AsyncWebServerRequest *request) {
+
+            Serial.println(".... HTTP_POST /saveConfiguration");
+
+
+            DynamicJsonDocument doc(1024);
+            espConfiguration->setESPConfigurationJSON(&doc);
+
+            File file = SPIFFS.open("/configuration.json", FILE_WRITE);
+            int size = serializeJson(doc, file);
+            if (size == 0) {
+                Serial.println(F("Failed to write to file"));
+            } else {
+                Serial.printf("Wrote to file %i \n", size);
+            }
+            file.close();
+
+            char buffer[512];
+            serializeJson(doc, buffer, 512);
+            request->send(200, "application/json", buffer);
+
+        });
+
+        espConfiguration->webServer->on("/updateSettings", HTTP_POST, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_POST /updateSettings");
 
             int params = request->params();
-            for(int i=0;i<params;i++) {
+            for (int i = 0; i < params; i++) {
                 AsyncWebParameter *p = request->getParam(i);
                 const char *name = p->name().c_str();
                 ESPProperty property = espConfiguration->espProperties->getSettingByName(strdup(name));
                 switch (property.getType()) {
                     case CHAR: {
                         const char *value = p->value().c_str();
-                        espConfiguration->espProperties->editSetting( strdup(name), strdup(value) );
+                        espConfiguration->espProperties->editSetting(strdup(name), strdup(value));
                         Serial.printf("POST[%s]: %s\n", name, value);
                         break;
                     }
                     case INT: {
                         int value = p->value().toInt();
-                        espConfiguration->espProperties->editSetting( strdup(name), value );
+                        espConfiguration->espProperties->editSetting(strdup(name), value);
                         Serial.printf("POST[%s]: %i\n", name, value);
                         break;
                     }
@@ -146,14 +169,14 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/addLedSensor", HTTP_POST, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/addLedSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_POST /addLedSensor");
 
-            if( request->hasParam("name", true)
-                    && request->hasParam("pin", true)
-                    && request->hasParam("synonym", true)
-                    && request->hasParam("mqtt_topic", true) ) {
+            if (request->hasParam("name", true)
+                && request->hasParam("pin", true)
+                && request->hasParam("synonym", true)
+                && request->hasParam("mqtt_topic", true)) {
 
                 String p1 = request->getParam("name", true)->value();
                 const char *name = p1.c_str();
@@ -167,7 +190,7 @@ void setup() {
                 String p4 = request->getParam("mqtt_topic", true)->value();
                 const char *mqtt_topic = p4.c_str();
 
-                espConfiguration->sensorsManager->addLedSensor( pin, strdup(name), strdup(synonym), strdup(mqtt_topic) );
+                espConfiguration->sensorsManager->addLedSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
                 espConfiguration->mqttManager->subscribe(strdup(mqtt_topic));
             }
 
@@ -175,14 +198,14 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/addDHTSensor", HTTP_POST, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/addDHTSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_POST /addDHTSensor");
 
-            if( request->hasParam("name", true)
+            if (request->hasParam("name", true)
                 && request->hasParam("pin", true)
                 && request->hasParam("synonym", true)
-                && request->hasParam("mqtt_topic", true) ) {
+                && request->hasParam("mqtt_topic", true)) {
 
                 String p1 = request->getParam("name", true)->value();
                 const char *name = p1.c_str();
@@ -196,7 +219,7 @@ void setup() {
                 String p4 = request->getParam("mqtt_topic", true)->value();
                 const char *mqtt_topic = p4.c_str();
 
-                espConfiguration->sensorsManager->addDHTSensor( pin, strdup(name), strdup(synonym), strdup(mqtt_topic) );
+                espConfiguration->sensorsManager->addDHTSensor(pin, strdup(name), strdup(synonym), strdup(mqtt_topic));
 
             }
 
@@ -204,14 +227,14 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/addMotionSensor", HTTP_POST, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/addMotionSensor", HTTP_POST, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_POST /addMotionSensor");
 
-            if( request->hasParam("name", true)
+            if (request->hasParam("name", true)
                 && request->hasParam("pin", true)
                 && request->hasParam("synonym", true)
-                && request->hasParam("mqtt_topic", true) ) {
+                && request->hasParam("mqtt_topic", true)) {
 
                 String p1 = request->getParam("name", true)->value();
                 const char *name = p1.c_str();
@@ -225,7 +248,8 @@ void setup() {
                 String p4 = request->getParam("mqtt_topic", true)->value();
                 const char *mqtt_topic = p4.c_str();
 
-                espConfiguration->sensorsManager->addMotionSensor( pin, strdup(name), strdup(synonym), strdup(mqtt_topic) );
+                espConfiguration->sensorsManager->addMotionSensor(pin, strdup(name), strdup(synonym),
+                                                                  strdup(mqtt_topic));
 
             }
 
@@ -233,7 +257,7 @@ void setup() {
 
         });
 
-        espConfiguration->webServer->on("/state", HTTP_GET, [](AsyncWebServerRequest *request){
+        espConfiguration->webServer->on("/state", HTTP_GET, [](AsyncWebServerRequest *request) {
 
             Serial.println(".... HTTP_GET /state");
 
@@ -251,7 +275,7 @@ void loop() {
 
     delay(200);
 
-    if ( !espConfiguration->mqttManager->connected() ) {
+    if (!espConfiguration->mqttManager->connected()) {
         //espConfiguration->mqttManager->connectMQTTBroker();
     } else {
         espConfiguration->mqttManager->loop(espConfiguration->sensorsManager);

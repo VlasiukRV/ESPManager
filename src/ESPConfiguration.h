@@ -12,7 +12,6 @@
 #include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
 #include "AsyncJson.h"
-#include "ArduinoJson.h"
 #include "SPIFFS.h"
 
 //#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
@@ -42,8 +41,10 @@ public:
     void initWebServer();
     void initSensorsManager();
     void initMQTTManager();
+    void initESPConfiguration();
 
     void getESPPropertiesJSON(char* buffer);
+    void setESPConfigurationJSON(DynamicJsonDocument* doc);
     void getESPConfigurationJSON(char* buffer);
     void getESPStateJSON(char* buffer);
 
