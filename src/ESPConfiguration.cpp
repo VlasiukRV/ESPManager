@@ -295,7 +295,15 @@ void ESPConfiguration::getESPStateJSON(char* buffer) {
 
     DynamicJsonDocument doc(1024);
 
+    doc["cpuMHz"] = ESP.getCpuFreqMHz();
+
     doc["heap"] = ESP.getFreeHeap();
+    doc["maxHeap"] = ESP.getMaxAllocHeap();
+
+    doc["flashSpeedHz"] = ESP.getFlashChipSpeed();
+    doc["flashChipSize"] = ESP.getFlashChipSize();
+    doc["SketchSize"] = ESP.getSketchSize();
+    //doc["Vcc"] = ESP.getVcc();
 
     serializeJson(doc, buffer, 512);
 
@@ -309,5 +317,76 @@ void ESPConfiguration::initMQTTManager(){
                                   espProperties->getSettingStr("mqttPassword"));
 
     mqttManager->initMQTTBroker(sensorsManager);
+
+}
+
+void ESPConfiguration::loop() {
+
+    wiFiConnection->loop();
+
+    if (!mqttManager->connected()) {
+        //mqttManager->connectMQTTBroker();
+    } else {
+
+        mqttManager->loop();
+
+        Serial.print("..... begin ");
+        Serial.println(ESP.getFreeHeap());
+        sensorsManager->processingDHTSensors([&](DHTSensor *dhtSensor) {
+
+            const char* topic_prefix = dhtSensor->getMqttTopic();
+            const char* temperature_postfix = "/temperature";
+            const char* humidity_postfix = "/humidity";
+
+            int size = strlen(topic_prefix) + strlen(temperature_postfix) + 1;
+            char* temperature_topic = new char[size];
+            strcpy(temperature_topic,topic_prefix);
+            strcat(temperature_topic,temperature_postfix);
+            //const char* temperatureTopic_char = (const char*) temperature_topic;
+
+            mqttManager->publish((const char*) temperature_topic, dhtSensor->readTemperatureStr());
+
+            size = strlen(topic_prefix) + strlen(humidity_postfix) + 1;
+            char* humidity_topic = new char[size];
+            strcpy(humidity_topic,topic_prefix);
+            strcat(humidity_topic,humidity_postfix);
+            //const char* humidityTopic_char = (const char*) humidity_topic;
+
+            mqttManager->publish((const char*) humidity_topic, dhtSensor->readHumidityStr());
+
+            delete[] temperature_topic;
+            delete[] humidity_topic;
+
+        });
+        Serial.print("..... end ");
+        Serial.println(ESP.getFreeHeap());
+
+        sensorsManager->processingMotionSensors([&](MotionSensor *sensor) {
+
+            const char* topic_prefix = sensor->getMqttTopic();
+            const char* topic_postfix = "/motion";
+
+            int size = strlen(topic_prefix) + strlen(topic_postfix) + 1;
+            char* topic = new char[size];
+            strcpy(topic,topic_prefix);
+            strcat(topic,topic_postfix);
+            //const char* topic_char = (const char*) topic;
+
+            if (sensor->detectsMotion()) {
+                Serial.println("Motion detected...");
+                mqttManager->publish((const char*) topic, "detected");
+            } else {
+                Serial.println("Motion stopped...");
+                mqttManager->publish((const char*) topic, "stopped");
+            }
+
+            delete[] topic;
+        });
+
+    }
+
+    sensorsManager->processingLedSensors([](Led *ledSensor) {
+        ledSensor->loop();
+    });
 
 }

@@ -13,6 +13,8 @@ bool WiFiConnection::init() {
     _is_wifi_connected = false;
     _is_access_point = false;
 
+    scan_WIFI();
+
     _is_wifi_connected = initWiFiConnection();
     if (!_is_wifi_connected) {
 
@@ -75,7 +77,7 @@ bool WiFiConnection::initWiFiConnection() {
         //  Serial.println("Failed to connect.");
         //  return false;
         //}
-        if (millis() - timing >= 10000) {
+        if (millis() - timing >= CHECK_WIFI_TIME) {
             Serial.println("Failed to connect.");
             return false;
         }
@@ -89,7 +91,50 @@ bool WiFiConnection::initWiFiConnection() {
     return true;
 }
 
+void WiFiConnection::loop() {
+
+    if (!isWiFiConnected()) {
+        return;
+    }
+
+    unsigned long timing = millis();
+    // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
+    if ((WiFi.status() != WL_CONNECTED) && (timing - _previousMillis >= CHECK_WIFI_TIME)) {
+        Serial.print(millis());
+        Serial.println("Reconnecting to WiFi...");
+        WiFi.disconnect();
+        WiFi.reconnect();
+        _previousMillis = timing;
+    }
+
+}
+
+void WiFiConnection::scan_WIFI() {
+    Serial.println("WIFI scan ...");
+    // WiFi.scanNetworks returns the number of networks found
+    int n = WiFi.scanNetworks();
+    if (n == 0) {
+        Serial.println("[ERR] no networks found");
+    } else {
+        Serial.printf("[OK] %i networks found:\n",n);
+        for (int i = 0; i < n; ++i) {
+            // Print SSID for each network found
+            Serial.printf("  %i: ",i+1);
+            Serial.println(WiFi.SSID(i));
+            Serial.println(WiFi.RSSI(i));
+            delay(10);
+        }
+    }
+    Serial.println("...");
+}
+
 bool WiFiConnection::isWiFiConnected() {
+
+    if (WiFi.status() != WL_CONNECTED) {
+        _is_wifi_connected = false;
+    } else {
+        _is_wifi_connected = true;
+    }
 
     return _is_wifi_connected;
 

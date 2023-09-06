@@ -5,6 +5,8 @@
 #ifndef ESPMANAGER_WIFICONNECTION_H
 #define ESPMANAGER_WIFICONNECTION_H
 
+#define CHECK_WIFI_TIME 30000
+
 #include <WiFi.h>
 //#include <WiFiClient.h>
 //#include <WiFiServer.h>
@@ -24,9 +26,13 @@ public:
 
     bool initWiFiConnection();
 
+    void scan_WIFI();
+
     bool isWiFiConnected();
 
     bool isAccessPoint();
+
+    void loop();
 
 private:
     char *_ssid;
@@ -34,6 +40,8 @@ private:
 
     bool _is_wifi_connected;
     bool _is_access_point;
+
+    unsigned long _previousMillis = 0;
 
 };
 

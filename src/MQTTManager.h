@@ -13,6 +13,7 @@
 #define MQTT_BROKER_PORT 1083
 #define MQTT_BROKER_USERNAME "admin"
 #define MQTT_BROKER_PASSWORD "123456"
+#define CHECK_BROKER_TIME_CONNECTION 30000
 
 typedef std::function<void(char *topic, byte *payload, unsigned int length)> MQTTCallBackProcedure;
 
@@ -29,12 +30,14 @@ public:
     void connectMQTTBroker();
     void publish(const char* topic, const char* payload);
     void subscribe(const char* topic);
-    void loop(SensorsManager *sensorsManager);
+    void loop();
     bool connected();
 
-    String device_id = DEVICE_ID;
+    const char* device_id = DEVICE_ID;
 
 private:
+    unsigned long _previousMillis;
+
     WiFiClient _espClient;
     PubSubClient *_mqtt_client;
 

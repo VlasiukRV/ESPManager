@@ -1,0 +1,29 @@
+{
+  sensors: [
+    {
+      name: "led_red",
+      synonym: "Led Red",
+      type: "led",
+      properties: {
+        pin: 25,
+        mqtt_topic: "room/oNoFFgpio/message"
+      },
+      value: {
+        state: "on"
+      }
+    },
+    {
+      name: "DHT11",
+      synonym: "DHT11",
+      type: "dht11",
+      properties: {
+        pin: 14,
+        mqtt_topic: "room"
+      },
+      value: {
+        temperature: " 74.48",
+        humidity: " 54.00"
+      }
+    }
+  ]
+}

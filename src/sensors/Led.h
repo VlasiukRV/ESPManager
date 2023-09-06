@@ -6,6 +6,8 @@
 
 #define LED_MESSAGE_ON "on"
 #define LED_MESSAGE_OFF "off"
+#define LED_MESSAGE_BLINK "blink"
+#define LED_BLINK_INTERVAL 1000
 
 class Led {
 
@@ -28,8 +30,12 @@ public:
 
     char* getState();
     void setState(char* state);
+
+    void loop();
+
     void on();
     void off();
+    void blink();
 
 private:
 
@@ -39,6 +45,10 @@ private:
     const char *_mqtt_topic;
 
     char *_state;
+
+    unsigned long _previousMillis;
+    int _ledState = LOW;
+
 };
 
 #endif //ESPMANAGER_LED_H

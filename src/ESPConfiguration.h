@@ -48,6 +48,8 @@ public:
     void getESPConfigurationJSON(char* buffer);
     void getESPStateJSON(char* buffer);
 
+    void loop();
+
 private:
 
 };
